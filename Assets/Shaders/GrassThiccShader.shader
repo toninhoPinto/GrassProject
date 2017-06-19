@@ -66,6 +66,7 @@
 	float4 _LeafTopColor;
 	float _WindSpeed;
 
+	//vertex shader, simply sample the shader at each vertex location and move along data to the geometry shader
 	v2g vert(appdata v)
 	{
 		v2g o;
@@ -124,17 +125,18 @@
 		float4 normal = float4((n0 + n1 + n2) / 3,0) *_Height * randomHeight;
 		//basicly the bottom vector that defines both the width and the orientation of the triangle/blade
 		float4 tangent = mul(float4(1,0,0,0) * _Widht, rotationMatrix(normal, randomAngle * TWO_PI));
+		//create a vector perpendicular to the tangent and the normal to give the blades thickness
 		float4 thickness = float4(normalize(cross(normal,tangent))*_Thickness, 0);
-
 
 		//first tri
 		g2f pIn;
-
 		
 		pIn.vertex = mul(vp, center - tangent);
 		pIn.grassLeafColor = _LeafBottomColor;
 		triStream.Append(pIn);
 
+		//top vertex of the triangle, multiply the normal vector with a rotation matrix create with the crush texture map
+		//also add a sideways vector and multiply it with a sin function in order to animate wind
 		pIn.vertex = mul(vp, (mul(normal, rotationMatrix(tangent, steppedValue * HALF_PI)) + center) + tangent * sin((center.x + center.z + randomWind + _Time) * _WindSpeed) );
 		pIn.grassLeafColor = _LeafTopColor;
 		triStream.Append(pIn);
@@ -150,7 +152,7 @@
 		triStream.RestartStrip();
 		
 
-		//backside
+		//backside triangles
 
 		pIn.vertex = mul(vp, center - tangent);
 		pIn.grassLeafColor = _LeafBottomColor;
@@ -175,7 +177,6 @@
 	fixed4 frag(g2f i) : SV_Target
 	{
 		fixed4 col = i.grassLeafColor;
-
 		return col;
 	}
 

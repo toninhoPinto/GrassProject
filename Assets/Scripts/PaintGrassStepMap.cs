@@ -14,11 +14,12 @@ public class PaintGrassStepMap : MonoBehaviour {
 
     Vector2 point;
 
-    // Use this for initialization
+    // Initialize a texture and a color array to later use as a texture map for the grass
     void Start()
     {
         grassRenderer = GetComponent<Renderer>();
         point = new Vector2();
+
         maskTex = new Texture2D(width, height, TextureFormat.RGBAHalf, false);
         maskTex.wrapMode = TextureWrapMode.Clamp;
         colorsTexture = maskTex.GetPixels();
@@ -29,9 +30,11 @@ public class PaintGrassStepMap : MonoBehaviour {
         }
         maskTex.SetPixels(colorsTexture);
         maskTex.Apply();
-        grassRenderer.material.SetTexture("_SteppedTex", maskTex);
     }
 
+
+    //Detect collisions, for each collision point get its position in object space
+    //since the object space goes between -5 to 5, transform it into 0 to 1 which is equivalent to the uv
     void OnCollisionStay(Collision collision)
     {
         for (int i = 0; i < collision.contacts.Length; i++)
@@ -45,6 +48,10 @@ public class PaintGrassStepMap : MonoBehaviour {
         }
     }
 
+    //receive a uv position
+    //scale it over the texture space
+    //loop over color array, check where to paint
+    //apply color array to the texture and then to the shader
     void PaintTexture(Vector2 pos)
     {
         pos.x *= width;
@@ -56,7 +63,7 @@ public class PaintGrassStepMap : MonoBehaviour {
             ipos.y = i / width;
             if ((ipos - pos).magnitude < size)
             {
-                float newColor = .15f;// - (ipos - pos).magnitude / size;
+                float newColor = .15f;  // - (ipos - pos).magnitude / size;
                 colorsTexture[i] += new Color(newColor, newColor, newColor);
             }
         }
