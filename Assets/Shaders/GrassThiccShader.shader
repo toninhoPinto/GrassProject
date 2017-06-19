@@ -124,7 +124,7 @@
 		//basicly the up vector
 		float4 normal = float4((n0 + n1 + n2) / 3,0) *_Height * randomHeight;
 		//basicly the bottom vector that defines both the width and the orientation of the triangle/blade
-		float4 tangent = mul(float4(1,0,0,0) * _Widht, rotationMatrix(normal, randomAngle * TWO_PI));
+		float4 tangent = mul((center - v0) * _Widht, rotationMatrix(normal, randomAngle * TWO_PI));
 		//create a vector perpendicular to the tangent and the normal to give the blades thickness
 		float4 thickness = float4(normalize(cross(normal,tangent))*_Thickness, 0);
 

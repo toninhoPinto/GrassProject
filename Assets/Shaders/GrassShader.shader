@@ -126,7 +126,7 @@
 		//basicly the up vector
 		float4 normal = float4((n0 + n1 + n2) / 3,0) *_Height * randomHeight;
 		//basicly the bottom vector that defines both the width and the orientation of the triangle/blade
-		float4 tangent = mul(float4(1,0,0, 0.0f) * _Widht, rotationMatrix(normal, randomAngle * TWO_PI));
+		float4 tangent = mul((center-v0) * _Widht, rotationMatrix(normal, randomAngle * TWO_PI));
 
 		//first tri
 		g2f pIn;
