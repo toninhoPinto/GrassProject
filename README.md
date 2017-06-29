@@ -149,3 +149,13 @@ For thickness we are going to replace the 2 tris with 8 tris ( 8 vertexes thanks
 From 0-1 the value means how much a grass blade should be rotated downwards, with 0 meaning pointing upwards and 1 meaning the blade is completely lying down/crushed. I do not actually use 1 to avoid z-fighting between the grass blades when they are crushed.
 
 This can, should and hopefully will be changed to a multi color texture map. The object of a multi color map is to instead of giving a crush value, have each color map to a direction.
+
+
+### Direction with Color Map
+
+//TODO
+
+### Replacing CPU with GPU through the use of compute shader
+
+//TODO
+
