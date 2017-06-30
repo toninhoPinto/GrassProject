@@ -9,7 +9,7 @@ disclaimer: This is my first geometry shader, I'm still learning.
 - [Two Sided](#two-sided)
 - [Randomization](#randomization)
 - [Adding Thickness](#thickness)
-
+- [Resources](#resources)
 
 ## Simple Grass
 
@@ -186,3 +186,23 @@ As you can see, the red lines are debug lines for the collision points provided.
 
 //TODO
 
+## Resources
+
+https://www.youtube.com/watch?v=0H1FVOphmIo + https://www.youtube.com/watch?v=b2AlyCNbYmY + ...
+This youtube series starts as an instanced renderer (1st video), jumps into point cloud + geometry render (so basicly instead of using the terrain tris as origin points he feeds his own points and creates the grass from those, also his grass are quads with textures using a cross billboarded approach not separate grass blades as this project) In his following videos he dabbles in flow/direction maps, wind, and overall improves the grass.
+
+Reddit posts with great geometry grass
+https://www.reddit.com/r/Unity3D/comments/6a8gya/i_am_also_working_on_a_geometry_grass_shader/
+https://www.reddit.com/r/Unity3D/comments/6a5z9o/testing_a_geomtess_grass_shader/
+
+A great grass shader tutorial
+http://ellenack.com/2016/11/05/grass-geometry-shader/
+
+Some geometry grass papers
+http://outerra.blogspot.pt/2012/05/procedural-grass-rendering.html
+http://www.stijndelaruelle.com/pdf/grass.pdf
+
+(These last two links + the tutorial one result in very realistic grass blades with multiple tris for a single blade, resulting in the grass blade even bending with gravity, personally i like the toony approach but these are great to read for understanding the potential of grass geometry shaders even in realistic settings)
+
+Overall grass paper
+http://www.kevinboulanger.net/grass.html
