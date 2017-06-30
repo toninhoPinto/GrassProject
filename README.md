@@ -137,6 +137,7 @@ After we pick our vector, we just use a sin function to change the vector. The m
 ## Thickness   
     
 For thickness we are going to replace the 2 tris with 8 tris ( 8 vertexes thanks to tri strips).
+To do this is fairly simple, basicly we just offset the base vertexes by a certain value (\_Thickness). Almost like making a square.
     
 ![](http://i.imgur.com/0P0KiT6.png)    
     
@@ -144,18 +145,44 @@ For thickness we are going to replace the 2 tris with 8 tris ( 8 vertexes thanks
     
 ## Shading     
     
+Shading is also fairly simple, even tho, personally i dont like the effect that much.
+
+Basicly, you calculate the normal for each grass blade as you create the grass blade on the geometry shader. Then you pass it to
+the fragment shader and in there you are free to use whatever lighting you want.
+
+![](http://i.imgur.com/zTDHj4G.png)
+    
 ## Crushing    
 
 From 0-1 the value means how much a grass blade should be rotated downwards, with 0 meaning pointing upwards and 1 meaning the blade is completely lying down/crushed. I do not actually use 1 to avoid z-fighting between the grass blades when they are crushed.
 
 This can, should and hopefully will be changed to a multi color texture map. The object of a multi color map is to instead of giving a crush value, have each color map to a direction.
 
+Currently the way i'm doing this is by painting on the cpu side. Basicly the ground plane has a collider, whenever something collides with it get the collision points and paint on the texture in the equivalent locations.
+
+The result is a black texture with a few white circles. Then on the shader we sample the texture and use the white to rotate the up vector along the ground axis.
+
+Problems:
+
+CPU painting isnt exactly fast (but its good enough with small textures)
+
+OnCollisionStay runs everyframe and calls CPU painting (OUCH), some optimizations could be done here by asking the object if its speed is above 0, if not then there is no need to paint since its just resting.
+
+Black and white dont have directional data, this could result in an object moving from left to right but the grass blades getting trampled to the left instead of the right.
+
+![](http://imgur.com/OurEpNm.gif)
+
+Another thing to notice is that, the collision points provided by unity are lacking. This results in some grass blades that should be crushed not being crushed.
+
+![](http://i.imgur.com/oWfxTkV.png)
+
+As you can see, the red lines are debug lines for the collision points provided. For the sphere this is fine (perfect even), but for the stretched cube is far from enough. You can see that there are only collision points on the extremes of the shape and that if its too long, then the middle has empty gaps in the painted texture (bottom right corner) resulting in grass blades intersecting the cube.
 
 ### Direction with Color Map
 
 //TODO
 
-### Replacing CPU with GPU through the use of compute shader
+### Replacing CPU-painting with GPU-painting through the use of compute shader
 
 //TODO
 
