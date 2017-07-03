@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PaintGrassStepMap : MonoBehaviour {
+public class PaintGrassDirMap : MonoBehaviour
+{
 
     Renderer grassRenderer;
     Texture2D maskTex;
@@ -41,11 +42,16 @@ public class PaintGrassStepMap : MonoBehaviour {
             return;
         if (collision.gameObject.GetComponent<Rigidbody>().velocity.sqrMagnitude > 0f)
         {
-            HandleOneLineAtATime(collision.contacts);
+            Vector3 dirInObj = grassRenderer.transform.InverseTransformVector(collision.gameObject.GetComponent<Rigidbody>().velocity);
+            Vector2 dir;
+            dir.x = (-dirInObj.x + 5f) / 10f;
+            dir.y = (-dirInObj.z + 5f) / 10f;
+
+            HandleOneLineAtATime(collision.contacts, dir);
         }
     }
 
-    void HandleOnePointAtATime(ContactPoint[] contacts)
+    void HandleOnePointAtATime(ContactPoint[] contacts, Vector2 dir)
     {
         for (int i = 0; i < contacts.Length; i++)
         {
@@ -54,11 +60,12 @@ public class PaintGrassStepMap : MonoBehaviour {
 
             point.x = (-pointInObj.x + 5f) / 10f;
             point.y = (-pointInObj.z + 5f) / 10f;
-            PaintTexturePos(point);
+
+            PaintTexturePos(point, dir);
         }
     }
 
-    void HandleOneLineAtATime(ContactPoint[] contacts)
+    void HandleOneLineAtATime(ContactPoint[] contacts, Vector2 dir)
     {
         Vector2 point2 = new Vector2();
         for (int i = 0; i < contacts.Length; i++)
@@ -69,14 +76,14 @@ public class PaintGrassStepMap : MonoBehaviour {
             point.x = (-pointInObj.x + 5f) / 10f;
             point.y = (-pointInObj.z + 5f) / 10f;
 
-            pointInObj = grassRenderer.transform.InverseTransformPoint(contacts[(i+1)%contacts.Length].point);
+            pointInObj = grassRenderer.transform.InverseTransformPoint(contacts[(i + 1) % contacts.Length].point);
 
             point2.x = (-pointInObj.x + 5f) / 10f;
             point2.y = (-pointInObj.z + 5f) / 10f;
 
             Debug.DrawLine(contacts[i].point, contacts[(i + 1) % contacts.Length].point, Color.blue, 10f);
 
-            PaintTextureLine(point, point2);
+            PaintTextureLine(point, point2, dir, dir);
         }
     }
 
@@ -84,7 +91,7 @@ public class PaintGrassStepMap : MonoBehaviour {
     //scale it over the texture space
     //loop over color array, check where to paint
     //apply color array to the texture and then to the shader
-    void PaintTexturePos(Vector2 pos)
+    void PaintTexturePos(Vector2 pos, Vector2 color)
     {
         pos.x *= width;
         pos.y *= height;
@@ -95,8 +102,8 @@ public class PaintGrassStepMap : MonoBehaviour {
             ipos.y = i / width;
             if ((ipos - pos).magnitude < size)
             {
-                float newColor = 1f;  // - (ipos - pos).magnitude / size;
-                colorsTexture[i] += new Color(newColor, newColor, newColor);
+                // - (ipos - pos).magnitude / size;
+                colorsTexture[i] += new Color(color.x, color.y, 0f);
             }
         }
         maskTex.SetPixels(colorsTexture);
@@ -108,7 +115,7 @@ public class PaintGrassStepMap : MonoBehaviour {
     //scale them over the texture space
     //loop over color array, check where to paint
     //apply color array to the texture and then to the shader
-    void PaintTextureLine(Vector2 pos, Vector2 pos2)
+    void PaintTextureLine(Vector2 pos, Vector2 pos2, Vector2 color, Vector2 color2)
     {
         pos.x *= width;
         pos.y *= height;
@@ -122,6 +129,7 @@ public class PaintGrassStepMap : MonoBehaviour {
         float lineSize = dirVector.sqrMagnitude;
 
         Vector2 iPosProjected;
+        Vector2 finalColor;
 
         for (int i = 0; i < colorsTexture.Length; i++)
         {
@@ -131,6 +139,7 @@ public class PaintGrassStepMap : MonoBehaviour {
             if (lineSize == 0)
             {
                 iPosProjected = pos;
+                finalColor = color;
             }
             else
             {
@@ -138,21 +147,28 @@ public class PaintGrassStepMap : MonoBehaviour {
                 float projectedSize = Vector2.Dot(newVector, dirVector) / dirVector.sqrMagnitude;
 
                 if (projectedSize < 0f)
+                {
                     iPosProjected = pos;
+                    finalColor = color;
+                }
                 else if (projectedSize > 1f)
+                {
                     iPosProjected = pos2;
+                    finalColor = color2;
+                }
                 else
                 {
                     iPosProjected = pos + projectedSize * dirVector;
+                    finalColor = color * projectedSize + color2 * (1 - projectedSize);
                 }
+
             }
 
             if ((ipos - iPosProjected).magnitude < size)
             {
-                float newColor = 1f;
-                colorsTexture[i] += new Color(newColor, newColor, newColor);
+                float newColor = (ipos - iPosProjected).magnitude / size;
+                colorsTexture[i] = new Color(color.x, color.y, 1f);
             }
-
         }
         maskTex.SetPixels(colorsTexture);
         maskTex.Apply();

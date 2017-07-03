@@ -1,4 +1,4 @@
-﻿Shader "Custom/GrassThiccShader"
+﻿Shader "Custom/GrassThiccDir"
 {
 	Properties
 	{
@@ -97,7 +97,7 @@
 						0.0,								0.0,								0.0,								1.0);
 	}
 
-	[maxvertexcount(12)]
+	[maxvertexcount(8)]
 	void geom(triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
 
 		float4 v0 = IN[0].vertex;
@@ -117,16 +117,19 @@
 		float randomHeight = (IN[0].grassHeight.r + IN[1].grassHeight.r + IN[2].grassHeight.r) / 3;
 		float randomWind = (IN[0].grassWind.r + IN[1].grassWind.r + IN[2].grassWind.r) / 3;
 		float randomAngle = (IN[0].grassOrientation.r + IN[1].grassOrientation.r + IN[2].grassOrientation.r) / 3;
-		float steppedValue = min(IN[0].grassStepped.r + IN[1].grassStepped.r + IN[2].grassStepped.r, 0.9);
+		float steppedValueR = (IN[0].grassStepped.r + IN[1].grassStepped.r + IN[2].grassStepped.r) / 3;
+		float steppedValueB = (IN[0].grassStepped.b + IN[1].grassStepped.b + IN[2].grassStepped.b) / 3;
 
 		//center will be the bottom of each grass blade
 		float4 center = (v0 + v1 + v2) / 3;
 		//basicly the up vector
-		float4 normal = float4((n0 + n1 + n2) / 3,0) *_Height * randomHeight;
+		float4 normal = float4((n0 + n1 + n2) / 3, 0) *_Height * randomHeight;
 		//basicly the bottom vector that defines both the width and the orientation of the triangle/blade
 		float4 tangent = mul((center - v0) * _Widht, rotationMatrix(normal, randomAngle * TWO_PI));
 		//create a vector perpendicular to the tangent and the normal to give the blades thickness
 		float4 thickness = float4(normalize(cross(normal,tangent))*_Thickness, 0);
+
+		normal = normal + float4(steppedValueR, 0, steppedValueB, 0) + tangent * sin((center.x + center.z + randomWind + _Time) * _WindSpeed);
 
 		//first tri
 		g2f pIn;
@@ -137,7 +140,7 @@
 
 		//top vertex of the triangle, multiply the normal vector with a rotation matrix create with the crush texture map
 		//also add a sideways vector and multiply it with a sin function in order to animate wind
-		pIn.vertex = mul(vp, (mul(normal, rotationMatrix(tangent, steppedValue * HALF_PI)) + center) + tangent * sin((center.x + center.z + randomWind + _Time) * _WindSpeed) );
+		pIn.vertex = mul(vp, center + normal);
 		pIn.grassLeafColor = _LeafTopColor;
 		triStream.Append(pIn);
 
@@ -162,7 +165,7 @@
 		pIn.grassLeafColor = _LeafBottomColor;
 		triStream.Append(pIn);
 
-		pIn.vertex = mul(vp, (mul(normal, rotationMatrix(tangent, steppedValue * HALF_PI)) + center) + tangent * sin((center.x + center.z + randomWind + _Time) * _WindSpeed));
+		pIn.vertex = mul(vp, center + normal);
 		pIn.grassLeafColor = _LeafTopColor;
 		triStream.Append(pIn);
 
